@@ -21,11 +21,11 @@
 
 typedef BOOL (WINAPI *DwmGetDxSharedSurface_td) (
 	__in HWND hwnd, 
-	__out_opt UINT32* p1, 
-	__out_opt UINT64* p2, 
-	__out_opt UINT32* p3, 
-	__out_opt UINT32* p4, 
-	__out_opt UINT64* p5 );
+	__out_opt HANDLE* p1, 
+	__out_opt LUID* p2, 
+	__out_opt ULONG* p3, 
+	__out_opt ULONG* p4, 
+	__out_opt ULONGLONG* p5 );
 
 typedef int (WINAPI *GetSharedSurface_td) (
     HWND hwnd,
@@ -148,13 +148,15 @@ HANDLE GetDWMSharedHandle(HWND hwnd)
 
     //GetSharedSurface(hwnd, 
 
-    UINT32 hwndInt = (UINT32)hwnd;
-    UINT64 p2 = -1,p5 = -1;
-    UINT32 p1 = -1,p3 = -1,p4 = -1;
+    HANDLE surface;
+    LUID adapter;
+    ULONG pFmtWindow;
+    ULONG pPresentFlags;
+    ULONGLONG pWin32kUpdateId;
 
-    DwmGetSharedSurface(hwnd,&p1,&p2,&p3,&p4,&p5);
+    DwmGetSharedSurface(hwnd, &surface, &adapter, &pFmtWindow, &pPresentFlags, &pWin32kUpdateId);
 
-    return (HANDLE)p1;
+    return surface;
 }
 
 bool DWMCaptureSource::Init(XElement *data)
@@ -238,7 +240,7 @@ void DWMCaptureSource::AttemptCapture()
 
     HANDLE textureHandle = GetDWMSharedHandle(hwndTarget);
 
-    sharedTexture = GS->CreateTextureFromSharedHandle(0, 0, GS_UNKNOWNFORMAT, textureHandle);
+    sharedTexture = GS->CreateTextureFromSharedHandle(0, 0, textureHandle);
 }
 
 Vect2 DWMCaptureSource::GetTargetSize()
